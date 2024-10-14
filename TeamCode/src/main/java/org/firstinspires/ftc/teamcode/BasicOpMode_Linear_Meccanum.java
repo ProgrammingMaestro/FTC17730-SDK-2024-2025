@@ -47,6 +47,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -71,14 +73,21 @@ public class BasicOpMode_Linear_Meccanum extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    DcMotorEx leftFront, leftBack, rightBack, rightFront;
+    DcMotorEx leftFront, leftBack, rightBack, rightFront, robotArm;
+    Servo servoCima, servoRevolution;
 
     @Override
     public void runOpMode() {
-        leftFront = hardwareMap.get(DcMotorEx .class, "leftFront");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = hardwareMap.get(DcMotorEx .class, "frontleft");
+        leftBack = hardwareMap.get(DcMotorEx.class, "backleft");
+        rightBack = hardwareMap.get(DcMotorEx.class, "backright");
+        rightFront = hardwareMap.get(DcMotorEx.class, "frontright");
+        robotArm = hardwareMap.get(DcMotorEx.class, "garra");
+
+        servoCima = hardwareMap.get(Servo.class, "servocima");
+        servoRevolution = hardwareMap.get(Servo.class, "servor");
+        servoCima.scaleRange(0, 0.5);
+        servoRevolution.scaleRange(0, 0.5);
 
         leftFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
@@ -91,7 +100,9 @@ public class BasicOpMode_Linear_Meccanum extends LinearOpMode {
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         leftFront.setDirection(DcMotor.Direction.REVERSE);
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        //leftBack.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -99,8 +110,8 @@ public class BasicOpMode_Linear_Meccanum extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            double x   = gamepad1.left_stick_x;
             double y =  -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+            double x   = gamepad1.left_stick_x * 1.1;
             double turn =  gamepad1.right_stick_x;
 
             double theta = Math.atan2(y, x);
@@ -135,8 +146,17 @@ public class BasicOpMode_Linear_Meccanum extends LinearOpMode {
             rightFront.setPower(frontRightPower);
             leftBack.setPower(backLeftPower);
             rightBack.setPower(backRightPower);
+            robotArm.setPower(gamepad2.left_stick_x);
+            if (gamepad2.right_bumper){
+                servoCima.setPosition(1);
+                servoRevolution.setPosition(1);
+            } else if (gamepad2.left_bumper){
+                servoCima.setPosition(0);
+                servoRevolution.setPosition(0);
+            }
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("motors", String.format("FrontL: %.2f, FrontR %.2f, BackL %.2f, BackR %.2f",frontLeftPower, frontRightPower, backLeftPower, backRightPower));
             //telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
         }
