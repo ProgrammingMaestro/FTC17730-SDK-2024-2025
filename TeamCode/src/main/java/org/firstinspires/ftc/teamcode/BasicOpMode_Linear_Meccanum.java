@@ -86,8 +86,6 @@ public class BasicOpMode_Linear_Meccanum extends LinearOpMode {
 
         servoCima = hardwareMap.get(Servo.class, "servocima");
         servoRevolution = hardwareMap.get(Servo.class, "servor");
-        servoCima.scaleRange(0, 0.5);
-        servoRevolution.scaleRange(0, 0.5);
 
         leftFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
@@ -154,9 +152,10 @@ public class BasicOpMode_Linear_Meccanum extends LinearOpMode {
                 servoCima.setPosition(0);
                 servoRevolution.setPosition(0);
             }
+            String myString = "FrontL: %.2f, FrontR %.2f, BackL %.2f, BackR %.2f";
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("motors", String.format("FrontL: %.2f, FrontR %.2f, BackL %.2f, BackR %.2f",frontLeftPower, frontRightPower, backLeftPower, backRightPower));
+            telemetry.addData("motors", String.format(myString, frontLeftPower, frontRightPower, backLeftPower, backRightPower));
             //telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
         }
